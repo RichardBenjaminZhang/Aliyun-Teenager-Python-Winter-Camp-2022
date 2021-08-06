@@ -1,0 +1,62 @@
+%matplotlib inline
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
+import random
+from copy import deepcopy
+
+N = 10
+data=\
+[[0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+ [1, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+ [0, 0, 0, 0, 0, 1, 0, 0, 0, 0,],
+ [0, 0, 0, 0, 1, 0, 0, 0, 0, 0,],
+ [0, 0, 1, 0, 0, 0, 1, 1, 1, 0,],
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+ [0, 1, 0, 0, 0, 0, 1, 0, 1, 0,],
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+ [0, 0, 0, 0, 1, 1, 0, 0, 0, 0,]]
+
+N = 100
+data = np.zeros((N,N))
+for i in range(N*N//2):
+    xn = random.randint(0, N-1)
+    yn = random.randint(0, N-1)
+    data[xn][yn] = 1
+
+def prepare(x,y):
+    if x>=0 and x<=N-1 and y>=0 and y<=N-1:
+        return 1
+    else:
+        return 0
+
+def update(_):
+    global data
+    newData = deepcopy(data) #list(data) or data[:]: shallow copy
+    for i in range(N):
+        for j in range(N):
+            total = (data[i-1][j-1] & prepare(i-1,j-1)) + (data[i-1][j] & prepare(i-1,j)) + (data[i-1][j+1] & prepare(i-1,j+1)) + (data[i][j-1] & prepare(i,j-1)) + (data[i][j+1] & prepare(i,j+1)) + (data[i+1][j-1] & prepare(i+1,j-1)) + (data[i+1][j] & prepare(i+1,j)) + (data[i+1][j+1] & prepare(i+1,j+1))
+            
+            alive = None
+            if total == 2:
+                alive = data[i][j]
+            elif total == 3:
+                alive = 0
+            else:
+                alive = 1
+            
+            newData[i][j] = alive
+            
+    mat.set_data(data)
+    data = newData
+    return [mat]
+
+fig= plt.figure(figsize=(4,4),dpi=72)
+ax=fig.add_subplot(111)
+mat = ax.matshow(data,cmap=plt.cm.winter)
+
+ani = animation.FuncAnimation(fig, update, frames=50, init_func=lambda :[mat])
+
+from IPython.display import HTML
+HTML(ani.to_jshtml())
